@@ -1,0 +1,1 @@
+This project uses wemos ESP to monitor gas levels, distance, temperature, and humidity, via the Firebase protocol and a simple web interface. This repository includes the code and instructions necessary to set up and manage the system. This project uses cdn.js for Firebase communication and Bootstrap for CSS framework to ensure a responsive and user-friendly web interface.

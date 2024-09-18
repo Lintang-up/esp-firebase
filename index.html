@@ -4,20 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="icon.png" type="image/x-icon" />
+    <title> Monitoring Realtime</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css" rel="stylesheet" />
     <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
-
-    <!-- Datepicker -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.4.1/css/dataTables.dateTime.min.css" />
-    <script src="https://cdn.datatables.net/datetime/1.4.1/js/dataTables.dateTime.min.js"></script>
-
-    <!-- Responsive -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap4.min.css" />
-    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap4.min.js"></script>
 
     <!-- Firebase -->
     <script type="module">
@@ -39,47 +31,55 @@
 
       // Initialize Firebase
       const app = initializeApp(firebaseConfig);
-      // Get a reference to the database service
       const db = getDatabase(app);
-      // Reference to the data you want to read
       const dataRef = ref(db, "Sensor");
+
       // Listen for changes in the data
       onValue(dataRef, (snapshot) => {
-        // Get the data as a JavaScript object
         const data = snapshot.val();
         const tableBody = document.getElementById("data-table-body");
-        // Clear the table body
-        tableBody.innerHTML = "";
-        // Populate the table with data
+        tableBody.innerHTML = ""; // Clear the table body
+
         if (data) {
-          for (const [key, value] of Object.entries(data)) {
-            const row = document.createElement("tr");
-            const keyCell = document.createElement("td");
-            const valueCell = document.createElement("td");
+          // Sort the data by key (descending order)
+          const sortedKeys = Object.keys(data).sort((a, b) => b - a);
 
-            keyCell.textContent = key;
+          for (const key of sortedKeys) {
+            const value = data[key];
+            if (value.gasLevel !== undefined && value.humidity !== undefined && value.temperature !== undefined && value.jarak !== undefined && value.timestamp !== undefined) {
+              const row = document.createElement("tr");
 
-            // Add unit based on key
-            let displayValue = value;
-            if (key.includes("gasLevel")) {
-              displayValue += " ppm";
-            } else if (key.includes("humidity")) {
-              displayValue += " %";
-            } else if (key.includes("jarak")) {
-              displayValue += " cm";
-            } else if (key.includes("temperature")) {
-              displayValue += " °C";
+              // Create table cells for each data field
+              const keyCell = document.createElement("td");
+              const timestampCell = document.createElement("td");
+              const gasLevelCell = document.createElement("td");
+              const humidityCell = document.createElement("td");
+              const temperatureCell = document.createElement("td");
+              const jarakCell = document.createElement("td");
+
+              keyCell.textContent = key; // The sensor number (e.g., 1, 2, 3)
+              timestampCell.textContent = value.timestamp;
+              gasLevelCell.textContent = value.gasLevel + " ppm";
+              humidityCell.textContent = value.humidity + " %";
+              temperatureCell.textContent = value.temperature + " °C";
+              jarakCell.textContent = value.jarak + " cm";
+
+              // Append cells to row
+              row.appendChild(keyCell);
+              row.appendChild(timestampCell);
+              row.appendChild(gasLevelCell);
+              row.appendChild(humidityCell);
+              row.appendChild(temperatureCell);
+              row.appendChild(jarakCell);
+
+              // Append row to the table body
+              tableBody.appendChild(row);
             }
-
-            valueCell.textContent = displayValue;
-            row.appendChild(keyCell);
-            row.appendChild(valueCell);
-            tableBody.appendChild(row);
           }
         } else {
           const row = document.createElement("tr");
           const cell = document.createElement("td");
-          cell.colSpan = 2;
+          cell.colSpan = 6; // Adjust colspan to match the number of columns
           cell.textContent = "No data available";
           cell.classList.add("text-center");
           row.appendChild(cell);
@@ -96,13 +96,17 @@
       <table class="table table-striped table-bordered dt-responsive nowrap" style="width: 100%">
         <thead class="text-white bg-success">
           <tr>
-            <th scope="col">Sensor</th>
-            <th scope="col">Nilai</th>
+            <th scope="col">No</th>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Gas Level</th>
+            <th scope="col">Kelembaban</th>
+            <th scope="col">Suhu</th>
+            <th scope="col">Jarak</th>
           </tr>
         </thead>
         <tbody id="data-table-body">
           <tr>
-            <td colspan="2">Loading data...</td>
+            <td colspan="6">Loading data...</td>
           </tr>
         </tbody>
       </table>
